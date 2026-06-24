@@ -20,16 +20,17 @@
 /* ── Full-screen at small sizes ──────────────────────────────────────── */
 @media (max-width: 900px) {
   .outer {
-    padding: 0;
-    background: var(--ctp-base);
-    align-items: stretch;
-    justify-content: stretch;
+    min-height: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
   }
 
   .shell {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
     border-radius: 0 !important;
     border: none !important;
     box-shadow: none !important;
