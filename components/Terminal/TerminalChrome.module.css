@@ -45,7 +45,24 @@
   color: var(--ctp-surface2);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
+  .chrome {
+    padding: 10px 14px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .dots {
+    gap: 7px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
   .version {
     display: none;
   }

@@ -34,12 +34,10 @@
     border: none !important;
     box-shadow: none !important;
   }
-}
 
-/* ── Smaller font on narrow screens ──────────────────────────────────── */
-@media (max-width: 640px) {
   .termBody {
     padding: 16px 18px 48px !important;
     font-size: 14px !important;
+    line-height: 1.6 !important;
   }
 }
