@@ -22,10 +22,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPost({ params }: Props) {
   const { slug } = await params
-  const [whoami, projects, contact, postMetas, initialPost] = await Promise.all([
+  const [whoami, projects, postMetas, initialPost] = await Promise.all([
     getSectionData('whoami'),
     getSectionData('projects'),
-    getSectionData('contact'),
     getAllPosts(),
     getPostBySlug(slug),
   ])
@@ -35,7 +34,6 @@ export default async function BlogPost({ params }: Props) {
     <Terminal
       whoami={whoami}
       projects={projects}
-      contact={contact}
       posts={posts}
       initialPost={initialPost}
     />

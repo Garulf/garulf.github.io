@@ -10,7 +10,6 @@ import LsSection from '@/components/sections/LsSection'
 import ProjectsSection from '@/components/sections/ProjectsSection'
 import WritingSection from '@/components/sections/WritingSection'
 import PostSection from '@/components/sections/PostSection'
-import ContactSection from '@/components/sections/ContactSection'
 import styles from './Terminal.module.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -30,7 +29,6 @@ interface InjectedSection {
 interface TerminalProps {
   whoami: { meta: WhoamiMeta; contentHtml: string }
   projects: { meta: ProjectsMeta; contentHtml: string }
-  contact: { meta: WhoamiMeta; contentHtml: string }
   posts: Post[]
   initialPost?: Post
 }
@@ -51,7 +49,7 @@ function getCommand(type: string): string {
 
 // ─── Terminal Component ────────────────────────────────────────────────────────
 
-export default function Terminal({ whoami, projects, contact, posts, initialPost }: TerminalProps) {
+export default function Terminal({ whoami, projects, posts, initialPost }: TerminalProps) {
   const shellRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
 
@@ -190,7 +188,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
     if (type === 'ls') return <LsSection onInject={handleInject} />
     if (type === 'projects') return <ProjectsSection meta={projects.meta} />
     if (type === 'writing') return <WritingSection posts={posts} onInjectPost={handleInjectPost} />
-    if (type === 'contact') return <ContactSection meta={contact.meta} />
+    if (type === 'contact') return <WhoamiSection meta={whoami.meta} contentHtml={whoami.contentHtml} />
     if (type.startsWith('post/')) {
       const slug = type.slice(5)
       const post = posts.find((p) => p.slug === slug) ?? initialPost

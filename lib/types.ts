@@ -1,13 +1,14 @@
+export interface WhoamiLink {
+  url: string;
+  label?: string;
+}
+
+export type WhoamiField = string | string[] | WhoamiLink;
+
 export interface WhoamiMeta {
   name: string;
-  role: string;
-  location: string;
-  languages: string[];
-  github: string;
-  mastodon: string;
-  coffee: string;
-  org: string;
   avatar: string;
+  [key: string]: WhoamiField;
 }
 
 export interface Project {

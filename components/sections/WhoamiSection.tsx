@@ -1,9 +1,21 @@
-import { WhoamiMeta } from '@/lib/types'
+import React from 'react'
+import { WhoamiMeta, WhoamiLink, WhoamiField } from '@/lib/types'
 
 interface WhoamiSectionProps {
   meta: WhoamiMeta
   contentHtml: string
 }
+
+const SKIP = new Set(['name', 'avatar'])
+const LINK_COLORS = [
+  'var(--ctp-mauve)',
+  'var(--ctp-teal)',
+  'var(--ctp-peach)',
+  'var(--ctp-blue)',
+  'var(--ctp-green)',
+  'var(--ctp-flamingo)',
+  'var(--ctp-sky)',
+]
 
 const labelStyle: React.CSSProperties = {
   color: 'var(--ctp-overlay0)',
@@ -15,7 +27,31 @@ const linkBase: React.CSSProperties = {
   wordBreak: 'break-all',
 }
 
+function isLink(val: WhoamiField): val is WhoamiLink {
+  return typeof val === 'object' && !Array.isArray(val) && val !== null
+}
+
 export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps) {
+  const entries = Object.entries(meta).filter(([key]) => !SKIP.has(key))
+  let linkIdx = 0
+  const rows = entries.map(([key, value]) => {
+    if (Array.isArray(value)) {
+      return { key, content: <span style={{ wordBreak: 'break-word' }}>{value.join(' · ')}</span> }
+    }
+    if (isLink(value)) {
+      const color = LINK_COLORS[linkIdx++ % LINK_COLORS.length]
+      return {
+        key,
+        content: (
+          <a href={value.url} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color }}>
+            {value.label ?? value.url}
+          </a>
+        ),
+      }
+    }
+    return { key, content: <span style={{ wordBreak: 'break-word' }}>{String(value)}</span> }
+  })
+
   return (
     <>
       <style>{`
@@ -70,35 +106,19 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
               fontSize: '16px',
             }}
           >
-            <span style={labelStyle}>ROLE</span>
-            <span style={{ wordBreak: 'break-word' }}>{meta.role}</span>
-            <span style={labelStyle}>LOCATION</span>
-            <span style={{ wordBreak: 'break-word' }}>{meta.location}</span>
-            <span style={labelStyle}>LANGUAGES</span>
-            <span style={{ wordBreak: 'break-word' }}>{meta.languages.join(' · ')}</span>
-            <span style={labelStyle}>GITHUB</span>
-            <a href={meta.github} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-mauve)' }}>
-              @Garulf
-            </a>
-            <span style={labelStyle}>MASTODON</span>
-            <a href={meta.mastodon} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-teal)' }}>
-              @Garulf@mastodon.social
-            </a>
-            <span style={labelStyle}>COFFEE</span>
-            <a href={meta.coffee} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-peach)' }}>
-              buymeacoffee.com/garulf
-            </a>
-            <span style={labelStyle}>ORG</span>
-            <a href={meta.org} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-blue)' }}>
-              Flow-Launcher
-            </a>
+            {rows.map(({ key, content }) => (
+              <React.Fragment key={key}>
+                <span style={labelStyle}>{key.toUpperCase()}</span>
+                <span>{content}</span>
+              </React.Fragment>
+            ))}
           </div>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="whoami-avatar"
-          src={meta.avatar}
-          alt={meta.name}
+          src={String(meta.avatar)}
+          alt={String(meta.name)}
           style={{
             width: '200px',
             height: '200px',
