@@ -91,10 +91,9 @@ body {
 
 .cursor {
   display: inline-block;
-  width: 11px;
-  height: 22px;
+  width: 2px;
+  height: 1.1em;
   background: var(--ctp-mauve);
-  animation: blink 1s step-start infinite;
   vertical-align: text-bottom;
-  margin-left: 2px;
+  margin-right: 2px;
 }

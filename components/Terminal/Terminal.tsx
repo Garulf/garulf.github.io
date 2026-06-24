@@ -55,11 +55,11 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const nextId = useRef(1)
+  const lsInjected = useRef(false)
+  const initialPostInjected = useRef(false)
 
   const [bootPhase, setBootPhase] = useState<BootPhase>('whoami-typing')
   const [injected, setInjected] = useState<InjectedSection[]>([])
-
-  const initialPostInjected = useRef(false)
 
   // ─── Typewriter hooks ─────────────────────────────────────────────────────
 
@@ -73,44 +73,54 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
   // ─── Scroll helpers ───────────────────────────────────────────────────────
 
   const scrollToBottom = useCallback(() => {
-    const body = bodyRef.current
-    if (!body) return
-    body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' })
+    bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' })
   }, [])
 
-  // ─── initialPost auto-inject after boot ───────────────────────────────────
+  // ─── Auto-inject ls after whoami ──────────────────────────────────────────
 
   useEffect(() => {
     if (bootPhase !== 'whoami-done') return
-    if (!initialPost) return
-    if (initialPostInjected.current) return
+    if (lsInjected.current) return
 
-    initialPostInjected.current = true
-    const type = `post/${initialPost.slug}`
-    const id = nextId.current++
-    setInjected((prev) => [
-      ...prev,
-      { id, type, command: getCommand(type), typing: true },
-    ])
-    history.replaceState({ injLen: 1 }, '')
-  }, [bootPhase, initialPost])
+    const timer = setTimeout(() => {
+      if (lsInjected.current) return
+      lsInjected.current = true
+      const id = nextId.current++
+      setInjected((prev) => [...prev, { id, type: 'ls', command: getCommand('ls'), typing: true }])
+    }, 600)
+
+    return () => clearTimeout(timer)
+  }, [bootPhase])
 
   // ─── Injected section typing completion ───────────────────────────────────
 
   const markSectionDone = useCallback(
-    (id: number) => {
+    (id: number, type: string) => {
       setInjected((prev) =>
         prev.map((s) => (s.id === id ? { ...s, typing: false } : s))
       )
-      setTimeout(() => scrollToBottom(), 80)
+      setTimeout(() => {
+        scrollToBottom()
+        // After ls finishes, auto-inject the blog post if one was requested
+        if (type === 'ls' && initialPost && !initialPostInjected.current) {
+          initialPostInjected.current = true
+          const postType = `post/${initialPost.slug}`
+          const postId = nextId.current++
+          setInjected((prev) => [
+            ...prev,
+            { id: postId, type: postType, command: getCommand(postType), typing: true },
+          ])
+          history.replaceState({ injLen: 2 }, '')
+        }
+      }, 80)
     },
-    [scrollToBottom]
+    [scrollToBottom, initialPost]
   )
 
   const injectedTyped = useTypewriter(
     lastInjected?.command ?? '',
     lastInjected?.typing === true,
-    lastInjected ? () => markSectionDone(lastInjected.id) : undefined
+    lastInjected ? () => markSectionDone(lastInjected.id, lastInjected.type) : undefined
   )
 
   // ─── Inject handler ───────────────────────────────────────────────────────
@@ -242,28 +252,24 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
             )
           })}
 
-          {/* ── Bottom prompt with ls suggestion ─────────────────── */}
-          {bootPhase === 'whoami-done' && (
+          {/* ── Bottom prompt: cursor before suggestion ───────────── */}
+          {bootPhase === 'whoami-done' && !isActivelyTyping && (
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 fontSize: '20px',
                 marginBottom: '8px',
-                cursor: isActivelyTyping ? 'default' : 'pointer',
+                cursor: 'pointer',
                 userSelect: 'none',
               }}
-              onClick={isActivelyTyping ? undefined : () => handleInject('ls')}
-              role={isActivelyTyping ? undefined : 'button'}
-              tabIndex={isActivelyTyping ? undefined : 0}
-              aria-label={isActivelyTyping ? undefined : 'Run ls -la ~/garulf'}
-              onKeyDown={
-                isActivelyTyping
-                  ? undefined
-                  : (e) => {
-                      if (e.key === 'Enter' || e.key === ' ') handleInject('ls')
-                    }
-              }
+              onClick={() => handleInject('ls')}
+              role="button"
+              tabIndex={0}
+              aria-label="Run ls -la ~/garulf"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleInject('ls')
+              }}
             >
               <span style={{ color: 'var(--ctp-green)' }}>garulf</span>
               <span style={{ color: 'var(--ctp-overlay0)' }}>@</span>
@@ -271,11 +277,8 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
               <span>&nbsp;</span>
               <span style={{ color: 'var(--ctp-blue)' }}>~</span>
               <span style={{ color: 'var(--ctp-mauve)' }}>&nbsp;$&nbsp;</span>
-              {isActivelyTyping ? (
-                <span className="cursor" />
-              ) : (
-                <span style={{ color: 'var(--ctp-overlay1)' }}>ls -la ~/garulf</span>
-              )}
+              <span className="cursor" />
+              <span style={{ color: 'var(--ctp-overlay1)' }}>ls -la ~/garulf</span>
             </div>
           )}
 
