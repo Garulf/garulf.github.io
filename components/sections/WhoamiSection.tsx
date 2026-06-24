@@ -7,19 +7,24 @@ interface WhoamiSectionProps {
 
 const labelStyle: React.CSSProperties = {
   color: 'var(--ctp-overlay0)',
+  whiteSpace: 'nowrap',
 }
 
 const linkBase: React.CSSProperties = {
   textDecoration: 'none',
+  wordBreak: 'break-all',
 }
 
 export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps) {
   return (
     <>
       <style>{`
-        @media (max-width: 640px) {
+        @media (max-width: 900px) {
           .whoami-flex { flex-direction: column !important; }
-          .whoami-avatar { width: 140px !important; height: 140px !important; }
+          .whoami-avatar { width: 100px !important; height: 100px !important; }
+          .whoami-name { font-size: 22px !important; }
+          .whoami-bio { font-size: 14px !important; }
+          .whoami-grid { grid-template-columns: auto 1fr !important; font-size: 13px !important; }
         }
       `}</style>
       <div
@@ -31,8 +36,9 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ flex: 1, minWidth: '280px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
+            className="whoami-name"
             style={{
               fontSize: '32px',
               fontWeight: 800,
@@ -44,6 +50,7 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
             {meta.name}
           </div>
           <div
+            className="whoami-bio"
             style={{
               fontSize: '18px',
               color: 'var(--ctp-subtext1)',
@@ -54,6 +61,7 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
           <div
+            className="whoami-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: '140px 1fr',
@@ -63,45 +71,25 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
             }}
           >
             <span style={labelStyle}>ROLE</span>
-            <span>{meta.role}</span>
+            <span style={{ wordBreak: 'break-word' }}>{meta.role}</span>
             <span style={labelStyle}>LOCATION</span>
-            <span>{meta.location}</span>
+            <span style={{ wordBreak: 'break-word' }}>{meta.location}</span>
             <span style={labelStyle}>LANGUAGES</span>
-            <span>{meta.languages.join(' · ')}</span>
+            <span style={{ wordBreak: 'break-word' }}>{meta.languages.join(' · ')}</span>
             <span style={labelStyle}>GITHUB</span>
-            <a
-              href={meta.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkBase, color: 'var(--ctp-mauve)' }}
-            >
+            <a href={meta.github} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-mauve)' }}>
               @Garulf
             </a>
             <span style={labelStyle}>MASTODON</span>
-            <a
-              href={meta.mastodon}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkBase, color: 'var(--ctp-teal)' }}
-            >
+            <a href={meta.mastodon} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-teal)' }}>
               @Garulf@mastodon.social
             </a>
             <span style={labelStyle}>COFFEE</span>
-            <a
-              href={meta.coffee}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkBase, color: 'var(--ctp-peach)' }}
-            >
+            <a href={meta.coffee} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-peach)' }}>
               buymeacoffee.com/garulf
             </a>
             <span style={labelStyle}>ORG</span>
-            <a
-              href={meta.org}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkBase, color: 'var(--ctp-blue)' }}
-            >
+            <a href={meta.org} target="_blank" rel="noopener noreferrer" style={{ ...linkBase, color: 'var(--ctp-blue)' }}>
               Flow-Launcher
             </a>
           </div>
@@ -117,6 +105,7 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
             borderRadius: '14px',
             objectFit: 'cover',
             flexShrink: 0,
+            maxWidth: '100%',
           }}
         />
       </div>

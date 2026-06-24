@@ -29,7 +29,7 @@ export default function WritingSection({ posts, onInjectPost }: WritingSectionPr
           <span style={{ color: 'var(--ctp-overlay0)', fontSize: '14px', whiteSpace: 'nowrap' }}>
             {post.date}
           </span>
-          <span style={{ flex: 1, minWidth: '240px' }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ color: 'var(--ctp-text)', fontWeight: 600, fontSize: '18px' }}>
               {post.title}
             </span>

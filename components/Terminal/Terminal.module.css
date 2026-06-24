@@ -40,5 +40,12 @@
     padding: 20px 24px 48px !important;
     font-size: 14px !important;
     line-height: 1.6 !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-x: hidden !important;
+  }
+
+  .suggestionPrompt {
+    font-size: 14px !important;
   }
 }
