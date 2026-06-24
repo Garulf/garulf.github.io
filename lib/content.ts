@@ -2,7 +2,6 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { remark } from 'remark'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 import remarkHtml from 'remark-html'
 import type { WhoamiMeta, ProjectsMeta, PostMeta, Post } from './types'
 
