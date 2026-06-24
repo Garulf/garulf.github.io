@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>garulf@github: ~</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:#181825;}
+::selection{background:#cba6f7;color:#11111b;}
+.term-body::-webkit-scrollbar{width:12px;}
+.term-body::-webkit-scrollbar-track{background:transparent;}
+.term-body::-webkit-scrollbar-thumb{background:#313244;border-radius:6px;border:3px solid #1e1e2e;}
+.term-body::-webkit-scrollbar-thumb:hover{background:#45475a;}
+@keyframes blink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+@keyframes revealup{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.reveal{animation:revealup .4s ease both;}
+a.lnk{transition:filter .15s;}
+a.lnk:hover{filter:brightness(1.25);}
+.cursor{display:inline-block;width:11px;height:22px;background:#cba6f7;margin-left:4px;animation:blink 1.05s step-end infinite;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<div style="background:#181825;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'JetBrains Mono',monospace;">
+  <div style="width:90vw;max-width:1300px;height:90vh;display:flex;flex-direction:column;background:#1e1e2e;border-radius:16px;border:1px solid #313244;box-shadow:0 40px 120px rgba(0,0,0,.65),0 0 0 1px rgba(69,71,90,.4);overflow:hidden;">
+
+    <!-- chrome -->
+    <div id="js-chrome" style="flex:none;display:flex;align-items:center;padding:15px 22px;background:#181825;border-bottom:1px solid #313244;cursor:pointer;">
+      <div style="display:flex;gap:9px;">
+        <span style="width:13px;height:13px;border-radius:50%;background:#f38ba8;"></span>
+        <span style="width:13px;height:13px;border-radius:50%;background:#f9e2af;"></span>
+        <span style="width:13px;height:13px;border-radius:50%;background:#a6e3a1;"></span>
+      </div>
+      <div style="flex:1;text-align:center;font-size:14px;color:#7f849c;">garulf@github: ~ — bash</div>
+      <div style="width:56px;text-align:right;font-size:12px;color:#45475a;">v3</div>
+    </div>
+
+    <!-- scrollable body -->
+    <div id="js-body" class="term-body" style="flex:1;overflow-y:auto;padding:36px 44px 64px;color:#cdd6f4;font-size:18px;line-height:1.75;-webkit-font-smoothing:antialiased;">
+
+      <!-- boot -->
+      <div style="color:#6c7086;font-size:14px;margin-bottom:44px;">
+        <div>Last login: Mon Jun 23 2026 on ttys001</div>
+        <div style="margin-top:4px;">Welcome to <span style="color:#cba6f7;">garulf.sh</span> — scroll to run commands ↓</div>
+      </div>
+
+      <!-- whoami block -->
+      <div id="whoami" style="scroll-margin-top:20px;margin-bottom:48px;">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;font-size:20px;">
+          <span style="color:#a6e3a1;">garulf</span><span style="color:#6c7086;">@</span><span style="color:#94e2d5;">github</span><span style="color:#6c7086;">&nbsp;</span><span style="color:#89b4fa;">~</span><span style="color:#cba6f7;">&nbsp;$&nbsp;</span><span id="cmd0" style="color:#cdd6f4;"></span><span id="cur0" class="cursor"></span>
+        </div>
+        <div id="out0" style="display:none;margin-top:24px;"></div>
+      </div>
+
+      <!-- ls block -->
+      <div id="block1" style="display:none;margin-bottom:48px;">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;font-size:20px;">
+          <span style="color:#a6e3a1;">garulf</span><span style="color:#6c7086;">@</span><span style="color:#94e2d5;">github</span><span style="color:#6c7086;">&nbsp;</span><span style="color:#89b4fa;">~</span><span style="color:#cba6f7;">&nbsp;$&nbsp;</span><span id="cmd1" style="color:#cdd6f4;"></span><span id="cur1" class="cursor" style="display:none;"></span>
+        </div>
+        <div id="out1" style="display:none;margin-top:20px;"></div>
+      </div>
+
+      <!-- injected sections -->
+      <div id="injected"></div>
+
+      <!-- closing prompt -->
+      <div id="close-prompt" style="display:none;align-items:center;font-size:20px;margin-bottom:8px;">
+        <span style="color:#a6e3a1;">garulf</span><span style="color:#6c7086;">@</span><span style="color:#94e2d5;">github</span><span style="color:#6c7086;">&nbsp;</span><span style="color:#89b4fa;">~</span><span style="color:#cba6f7;">&nbsp;$&nbsp;</span><span class="cursor"></span>
+      </div>
+
+      <div style="font-size:12px;color:#45475a;margin-top:28px;">© 2026 Garulf · Catppuccin Mocha · JetBrains Mono</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+const CMDS = ['whoami', 'ls -la ~/garulf'];
+const SLUGS = ['flow-launcher-python-plugin', 'home-assistant-launcher', 'steam-no-mouse', 'catppuccin-mocha'];
+
+const $ = id => document.getElementById(id);
+const body = $('js-body');
+
+// ── state ──────────────────────────────────────────────────────────────────
+let typing = {};
+let sectionTyping = false;
+let revealLock = false;
+let promptVisible = [true, false];
+let lastY = 0;
+let allInjected = [];
+let visibleCount = 0;
+let injectId = 0;
+let navListeners = [];
+
+// ── initial two sections ───────────────────────────────────────────────────
+function startTyping(i) {
+  if (typing[i]) return;
+  typing[i] = true;
+  sectionTyping = true;
+
+  const cmdEl = $('cmd' + i);
+  const curEl = $('cur' + i);
+  if (curEl) curEl.style.display = 'inline-block';
+
+  const full = CMDS[i];
+  let n = 0;
+  const tick = () => {
+    n++;
+    if (cmdEl) cmdEl.textContent = full.slice(0, n);
+    if (n < full.length) {
+      setTimeout(tick, 14 + Math.random() * 12);
+    } else {
+      setTimeout(() => {
+        if (curEl) curEl.style.display = 'none';
+        showStaticOutput(i);
+        sectionTyping = false;
+        setTimeout(() => {
+          if (i === CMDS.length - 1) {
+            $('close-prompt').style.display = 'flex';
+          } else {
+            promptVisible[i + 1] = true;
+            const nextBlock = $('block' + (i + 1));
+            nextBlock.style.display = 'block';
+            const nextCur = $('cur' + (i + 1));
+            if (nextCur) nextCur.style.display = 'inline-block';
+            maybeAutoAdvance();
+          }
+          body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
+        }, 380);
+      }, 200);
+    }
+  };
+  setTimeout(tick, 60);
+}
+
+function showStaticOutput(i) {
+  const el = $('out' + i);
+  el.style.display = 'block';
+  const div = document.createElement('div');
+  div.className = 'reveal';
+  div.innerHTML = i === 0 ? whoamiHtml() : lsHtml();
+  el.appendChild(div);
+  bindLinks(div);
+}
+
+function maybeAutoAdvance() {
+  setTimeout(() => {
+    let next = -1;
+    for (let i = 1; i < CMDS.length; i++) {
+      if (promptVisible[i] && !typing[i]) { next = i; break; }
+    }
+    if (next !== 1) return;
+    const scrollable = body.scrollHeight > body.clientHeight + 24;
+    if (!scrollable) revealNext();
+  }, 1100);
+}
+
+function revealNext() {
+  if (revealLock || sectionTyping) return;
+  let next = -1;
+  for (let i = 1; i < CMDS.length; i++) {
+    if (promptVisible[i] && !typing[i]) { next = i; break; }
+  }
+  if (next === -1) return;
+  revealLock = true;
+  setTimeout(() => { revealLock = false; }, 400);
+  startTyping(next);
+}
+
+// ── injected sections ──────────────────────────────────────────────────────
+function injectSection(type) {
+  const postIdx = type.startsWith('post') ? parseInt(type.slice(4)) : -1;
+  const cmdMap = {
+    projects: 'cat ./projects/*',
+    writing: 'ls ~/blog/posts | head -n 4',
+    contact: 'whoami',
+    nav: 'ls -la ~/garulf'
+  };
+  const cmd = postIdx >= 0 ? 'cat ./writing/' + SLUGS[postIdx] + '.md' : (cmdMap[type] || '');
+  const id = ++injectId;
+
+  allInjected = allInjected.slice(0, visibleCount);
+  allInjected.push({ id, type });
+  visibleCount++;
+  history.pushState({ injLen: visibleCount }, '');
+
+  const container = $('injected');
+  const block = document.createElement('div');
+  block.setAttribute('data-inject-id', String(id));
+  block.style.marginBottom = '48px';
+  block.innerHTML =
+    '<div style="display:flex;align-items:center;flex-wrap:wrap;font-size:20px;">' +
+      '<span style="color:#a6e3a1;">garulf</span><span style="color:#6c7086;">@</span>' +
+      '<span style="color:#94e2d5;">github</span><span style="color:#6c7086;">&nbsp;</span>' +
+      '<span style="color:#89b4fa;">~</span><span style="color:#cba6f7;">&nbsp;$&nbsp;</span>' +
+      '<span id="ic-' + id + '" style="color:#cdd6f4;"></span>' +
+      '<span id="icr-' + id + '" class="cursor"></span>' +
+    '</div>' +
+    '<div id="io-' + id + '" style="display:none;margin-top:20px;"></div>';
+  container.appendChild(block);
+
+  setTimeout(() => body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' }), 100);
+
+  if (type === 'nav') {
+    setTimeout(() => {
+      const ic = $('ic-' + id);
+      if (ic) ic.textContent = cmd;
+      setTimeout(() => {
+        showInjectOutput(id, type);
+        setTimeout(() => body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' }), 100);
+      }, 80);
+    }, 40);
+    return;
+  }
+
+  let n = 0;
+  const tick = () => {
+    n++;
+    const ic = $('ic-' + id);
+    if (ic) ic.textContent = cmd.slice(0, n);
+    if (n < cmd.length) {
+      setTimeout(tick, 7 + Math.random() * 7);
+    } else {
+      setTimeout(() => {
+        showInjectOutput(id, type);
+        setTimeout(() => body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' }), 200);
+        setTimeout(() => maybeInjectNav(), 400);
+      }, 150);
+    }
+  };
+  setTimeout(tick, 40);
+}
+
+function showInjectOutput(id, type) {
+  const cur = $('icr-' + id);
+  if (cur) cur.style.display = 'none';
+  const out = $('io-' + id);
+  if (!out) return;
+  out.style.display = 'block';
+  const div = document.createElement('div');
+  div.className = 'reveal';
+  div.innerHTML = renderContent(type);
+  out.appendChild(div);
+  bindLinks(div);
+}
+
+function maybeInjectNav() {
+  const nearBottom = () => body.scrollTop + body.clientHeight >= body.scrollHeight - 160;
+  if (nearBottom()) { setTimeout(() => injectSection('nav'), 500); return; }
+  const check = () => {
+    if (nearBottom()) {
+      body.removeEventListener('scroll', check);
+      navListeners = navListeners.filter(f => f !== check);
+      setTimeout(() => injectSection('nav'), 500);
+    }
+  };
+  body.addEventListener('scroll', check, { passive: true });
+  navListeners.push(check);
+}
+
+// ── link binding ───────────────────────────────────────────────────────────
+function bindLinks(container) {
+  container.querySelectorAll('[data-inject]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); injectSection(a.dataset.inject); });
+  });
+  container.querySelectorAll('[data-post]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); injectSection('post' + a.dataset.post); });
+  });
+}
+
+// ── content renderers ──────────────────────────────────────────────────────
+function renderContent(type) {
+  if (type === 'projects') return projectsHtml();
+  if (type === 'writing') return writingHtml();
+  if (type === 'contact') return contactHtml();
+  if (type === 'nav') return navHtml();
+  const i = parseInt(type.slice(4));
+  if (!isNaN(i)) return postHtml(i);
+  return '';
+}
+
+function whoamiHtml() {
+  return (
+    '<div style="display:flex;gap:30px;align-items:flex-start;flex-wrap:wrap;">' +
+      '<div style="flex:1;min-width:280px;">' +
+        '<div style="font-size:32px;font-weight:800;letter-spacing:-0.02em;color:#cdd6f4;margin-bottom:8px;">Garulf</div>' +
+        '<div style="font-size:18px;color:#bac2de;line-height:1.6;margin-bottom:22px;max-width:58ch;">Developer who lives in the keyboard. I build launcher plugins and home-automation tools that remove the step between an idea and the action.</div>' +
+        '<div style="display:grid;grid-template-columns:140px 1fr;row-gap:10px;column-gap:18px;font-size:16px;">' +
+          '<span style="color:#6c7086;">ROLE</span><span style="color:#cdd6f4;">Flow Launcher plugin maintainer</span>' +
+          '<span style="color:#6c7086;">LOCATION</span><span style="color:#cdd6f4;">UTC−04:00</span>' +
+          '<span style="color:#6c7086;">LANGUAGES</span><span><span style="color:#f9e2af;">Python</span> · <span style="color:#cba6f7;">C#</span> · <span style="color:#a6e3a1;">Shell</span> · <span style="color:#89b4fa;">CSS</span> · <span style="color:#f9e2af;">JavaScript</span></span>' +
+          '<span style="color:#6c7086;">GITHUB</span><a class="lnk" href="https://github.com/Garulf" target="_blank" rel="noopener" style="color:#cba6f7;text-decoration:none;">@Garulf</a>' +
+          '<span style="color:#6c7086;">MASTODON</span><a class="lnk" href="https://mastodon.social/@Garulf" target="_blank" rel="noopener" style="color:#94e2d5;text-decoration:none;">@Garulf@mastodon.social</a>' +
+          '<span style="color:#6c7086;">COFFEE</span><a class="lnk" href="https://www.buymeacoffee.com/garulf" target="_blank" rel="noopener" style="color:#fab387;text-decoration:none;">buymeacoffee.com/garulf</a>' +
+          '<span style="color:#6c7086;">ORG</span><a class="lnk" href="https://github.com/Flow-Launcher" target="_blank" rel="noopener" style="color:#89b4fa;text-decoration:none;">Flow-Launcher</a>' +
+        '</div>' +
+      '</div>' +
+      '<img src="https://avatars.githubusercontent.com/u/535299?v=4" alt="Garulf" style="width:200px;height:200px;border-radius:14px;border:1px solid #313244;flex:none;object-fit:cover;align-self:flex-start;">' +
+    '</div>'
+  );
+}
+
+function lsHtml() {
+  return (
+    '<div style="color:#6c7086;font-size:14px;margin-bottom:12px;">total 3 — click to jump</div>' +
+    '<div style="display:flex;flex-direction:column;gap:7px;font-size:17px;">' +
+      '<a class="lnk" href="#" data-inject="projects" style="text-decoration:none;display:flex;align-items:center;gap:20px;padding:5px 0;color:#89b4fa;">' +
+        '<span style="color:#6c7086;font-size:14px;">drwxr-xr-x</span><span style="color:#89b4fa;font-weight:600;">projects/</span><span style="color:#585b70;font-size:14px;">— 6 pinned repos</span>' +
+      '</a>' +
+      '<a class="lnk" href="#" data-inject="writing" style="text-decoration:none;display:flex;align-items:center;gap:20px;padding:5px 0;color:#89b4fa;">' +
+        '<span style="color:#6c7086;font-size:14px;">drwxr-xr-x</span><span style="color:#89b4fa;font-weight:600;">blog/</span><span style="color:#585b70;font-size:14px;">— notes from the terminal</span>' +
+      '</a>' +
+      '<a class="lnk" href="#" data-inject="contact" style="text-decoration:none;display:flex;align-items:center;gap:20px;padding:5px 0;color:#89b4fa;">' +
+        '<span style="color:#6c7086;font-size:14px;">drwxr-xr-x</span><span style="color:#89b4fa;font-weight:600;">contact/</span><span style="color:#585b70;font-size:14px;">— back to top</span>' +
+      '</a>' +
+    '</div>'
+  );
+}
+
+function projectsHtml() {
+  const repos = [
+    { name: 'HA-Commander', url: 'https://github.com/Garulf/HA-Commander', stars: 31, forks: 6, lang: 'Python', color: '#f9e2af', desc: 'Search and control your entire Home Assistant instance from Wox / Flow Launcher.' },
+    { name: 'pyFlowLauncher', url: 'https://github.com/Garulf/pyFlowLauncher', stars: 17, forks: 1, lang: 'Python', color: '#f9e2af', desc: 'A clean Python JSON-RPC library for writing Flow Launcher plugins.' },
+    { name: 'Steam-Search', url: 'https://github.com/Garulf/Steam-Search', stars: 16, forks: 5, lang: 'Python', color: '#f9e2af', desc: 'Search and launch any game in your Steam library from the keyboard.' },
+    { name: 'Search-MDI', url: 'https://github.com/Garulf/Search-MDI', stars: 2, forks: 1, lang: 'Python', color: '#f9e2af', desc: 'Browse and copy Material Design Icons inside Flow Launcher.' },
+  ];
+  return (
+    '<div style="display:flex;flex-direction:column;gap:22px;">' +
+    repos.map(r =>
+      '<a class="lnk" href="' + r.url + '" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:19px;">' +
+          '<span style="font-weight:600;color:#cdd6f4;"><span style="color:#cba6f7;">▸ </span>' + r.name + '</span>' +
+          '<span style="font-size:14px;color:#7f849c;display:flex;align-items:center;gap:16px;">' +
+            '<span>★ ' + r.stars + '</span><span>⑂ ' + r.forks + '</span>' +
+            '<span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:50%;background:' + r.color + ';"></span>' + r.lang + '</span>' +
+          '</span>' +
+        '</div>' +
+        '<div style="font-size:15px;color:#7f849c;padding-left:20px;margin-top:4px;">' + r.desc + '</div>' +
+      '</a>'
+    ).join('') +
+    '<a class="lnk" href="https://github.com/Garulf?tab=repositories" target="_blank" rel="noopener" style="text-decoration:none;color:#89b4fa;font-size:15px;">↳ see all 77 repositories →</a>' +
+    '</div>'
+  );
+}
+
+function writingHtml() {
+  const posts = [
+    { date: '2026.05.18', title: 'Writing your first Flow Launcher plugin in Python', tags: '<span style="color:#cba6f7;">#flow-launcher</span> <span style="color:#89b4fa;">#python</span>', read: '7 min read', i: 0 },
+    { date: '2026.03.02', title: 'Controlling Home Assistant from a keyboard launcher', tags: '<span style="color:#a6e3a1;">#home-assistant</span> <span style="color:#89b4fa;">#automation</span>', read: '9 min read', i: 1 },
+    { date: '2026.01.11', title: 'Launching Steam games without touching the mouse', tags: '<span style="color:#f9e2af;">#steam</span> <span style="color:#fab387;">#productivity</span>', read: '5 min read', i: 2 },
+    { date: '2025.11.27', title: 'Why I theme everything with Catppuccin Mocha', tags: '<span style="color:#f5c2e7;">#design</span> <span style="color:#cba6f7;">#dotfiles</span>', read: '4 min read', i: 3 },
+  ];
+  return (
+    '<div style="display:flex;flex-direction:column;gap:20px;">' +
+    posts.map(p =>
+      '<a class="lnk" href="#" data-post="' + p.i + '" style="text-decoration:none;display:flex;gap:22px;align-items:baseline;flex-wrap:wrap;">' +
+        '<span style="color:#6c7086;font-size:14px;flex:none;">' + p.date + '</span>' +
+        '<span style="flex:1;min-width:240px;">' +
+          '<span style="color:#cdd6f4;font-weight:600;font-size:18px;">' + p.title + '</span><br>' +
+          '<span style="font-size:14px;color:#7f849c;">' + p.tags + ' · ' + p.read + '</span>' +
+        '</span>' +
+      '</a>'
+    ).join('') +
+    '</div>'
+  );
+}
+
+function contactHtml() {
+  return (
+    '<div style="display:flex;gap:30px;align-items:flex-start;flex-wrap:wrap;">' +
+      '<div style="flex:1;min-width:280px;">' +
+        '<div style="display:grid;grid-template-columns:140px 1fr;row-gap:10px;column-gap:18px;font-size:16px;">' +
+          '<span style="color:#6c7086;">NAME</span><span style="color:#cdd6f4;font-weight:700;">Garulf</span>' +
+          '<span style="color:#6c7086;">ROLE</span><span style="color:#cdd6f4;">Flow Launcher plugin maintainer</span>' +
+          '<span style="color:#6c7086;">LOCATION</span><span style="color:#cdd6f4;">UTC−04:00</span>' +
+          '<span style="color:#6c7086;">LANGUAGES</span><span><span style="color:#f9e2af;">Python</span> · <span style="color:#cba6f7;">C#</span> · <span style="color:#a6e3a1;">Shell</span> · <span style="color:#89b4fa;">CSS</span> · <span style="color:#f9e2af;">JavaScript</span></span>' +
+          '<span style="color:#6c7086;">GITHUB</span><a class="lnk" href="https://github.com/Garulf" target="_blank" rel="noopener" style="color:#cba6f7;text-decoration:none;">@Garulf</a>' +
+          '<span style="color:#6c7086;">MASTODON</span><a class="lnk" href="https://mastodon.social/@Garulf" target="_blank" rel="noopener" style="color:#94e2d5;text-decoration:none;">@Garulf@mastodon.social</a>' +
+          '<span style="color:#6c7086;">COFFEE</span><a class="lnk" href="https://www.buymeacoffee.com/garulf" target="_blank" rel="noopener" style="color:#fab387;text-decoration:none;">buymeacoffee.com/garulf</a>' +
+          '<span style="color:#6c7086;">ORG</span><a class="lnk" href="https://github.com/Flow-Launcher" target="_blank" rel="noopener" style="color:#89b4fa;text-decoration:none;">Flow-Launcher</a>' +
+        '</div>' +
+      '</div>' +
+      '<img src="https://avatars.githubusercontent.com/u/535299?v=4" alt="Garulf" style="width:200px;height:200px;border-radius:14px;border:1px solid #313244;flex:none;object-fit:cover;align-self:flex-start;">' +
+    '</div>'
+  );
+}
+
+function navHtml() {
+  return (
+    '<div style="display:flex;flex-direction:column;gap:7px;font-size:17px;">' +
+      '<div style="color:#6c7086;font-size:14px;margin-bottom:8px;">total 3 — click to run</div>' +
+      '<a class="lnk" href="#" data-inject="projects" style="text-decoration:none;display:flex;align-items:center;gap:20px;padding:5px 0;color:#89b4fa;">' +
+        '<span style="color:#6c7086;font-size:14px;">drwxr-xr-x</span><span style="color:#89b4fa;font-weight:600;">projects/</span><span style="color:#585b70;font-size:14px;">— 6 pinned repos</span>' +
+      '</a>' +
+      '<a class="lnk" href="#" data-inject="writing" style="text-decoration:none;display:flex;align-items:center;gap:20px;padding:5px 0;color:#89b4fa;">' +
+        '<span style="color:#6c7086;font-size:14px;">drwxr-xr-x</span><span style="color:#89b4fa;font-weight:600;">blog/</span><span style="color:#585b70;font-size:14px;">— back to posts</span>' +
+      '</a>' +
+      '<a class="lnk" href="#" data-inject="contact" style="text-decoration:none;display:flex;align-items:center;gap:20px;padding:5px 0;color:#89b4fa;">' +
+        '<span style="color:#6c7086;font-size:14px;">drwxr-xr-x</span><span style="color:#89b4fa;font-weight:600;">contact/</span><span style="color:#585b70;font-size:14px;">— back to top</span>' +
+      '</a>' +
+    '</div>'
+  );
+}
+
+function postHtml(i) {
+  const posts = [
+    {
+      title: 'Writing your first Flow Launcher plugin in Python',
+      date: '2026.05.18',
+      tags: '<span style="color:#cba6f7;">#flow-launcher</span><span style="color:#89b4fa;">#python</span>',
+      read: '7 min read',
+      p1: 'Flow Launcher uses a JSON-RPC protocol to communicate with plugins. The <span style="color:#cba6f7;">pyFlowLauncher</span> library wraps this entirely, letting you write a working plugin in around 30 lines. Start with <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">from pyflowlauncher import Plugin, Result</span> and define a <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">query</span> method that returns a list of Results.',
+      p2: 'Each Result needs a Title, Subtitle, and optional IcoPath. Set a JsonRPCAction to run a shell command or call back into your Python code. Once you have a <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">plugin.json</span> manifest and drop the folder into Flow\'s plugin directory, it appears immediately — no restart needed.'
+    },
+    {
+      title: 'Controlling Home Assistant from a keyboard launcher',
+      date: '2026.03.02',
+      tags: '<span style="color:#a6e3a1;">#home-assistant</span><span style="color:#89b4fa;">#automation</span>',
+      read: '9 min read',
+      p1: 'HA-Commander connects to your Home Assistant instance using a long-lived access token and the REST API. It fetches all entities on startup and caches them, then filters by your query string. You can toggle lights, locks, scenes, and scripts without ever reaching for the mouse.',
+      p2: 'The plugin respects HA domains — searching <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">kitchen</span> returns every entity with "kitchen" in its friendly name, grouped by domain. Drop your <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">HA_URL</span> and <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">HA_TOKEN</span> into the plugin settings and it works instantly on the local network.'
+    },
+    {
+      title: 'Launching Steam games without touching the mouse',
+      date: '2026.01.11',
+      tags: '<span style="color:#f9e2af;">#steam</span><span style="color:#fab387;">#productivity</span>',
+      read: '5 min read',
+      p1: 'Steam-Search reads your local library from the <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">libraryfolders.vdf</span> manifest, so it works completely offline. It lists every installed game with its AppID and launches it by passing <span style="color:#a6e3a1;font-size:14px;background:rgba(166,227,161,0.08);padding:2px 8px;border-radius:4px;">steam://rungameid/{id}</span> to the system URI handler.',
+      p2: 'The plugin caches the library list so repeated queries are instant. Non-installed games can be surfaced via a toggle that queries the Steam Web API — useful for finding something to wishlist without ever opening the store.'
+    },
+    {
+      title: 'Why I theme everything with Catppuccin Mocha',
+      date: '2025.11.27',
+      tags: '<span style="color:#f5c2e7;">#design</span><span style="color:#cba6f7;">#dotfiles</span>',
+      read: '4 min read',
+      p1: 'Catppuccin Mocha is a warm dark palette with enough contrast for all-day use without the harshness of pure black themes. The four flavors — Latte, Frappé, Macchiato, Mocha — share the same accent hues, so switching between light and dark preserves the same visual identity across every surface.',
+      p2: 'I theme my terminal, editor, browser, and system with it because visual coherence reduces cognitive load. When every surface shares the same <span style="color:#f38ba8;">rose</span>, <span style="color:#cba6f7;">mauve</span>, and <span style="color:#74c7ec;">sapphire</span>, nothing feels jarring. The JetBrains Mono pairing adds just enough technical personality without being gimmicky.'
+    }
+  ];
+  const p = posts[i];
+  return (
+    '<div style="margin-bottom:32px;">' +
+      '<div style="font-size:28px;font-weight:800;color:#cdd6f4;margin-bottom:8px;letter-spacing:-0.02em;">' + p.title + '</div>' +
+      '<div style="font-size:14px;color:#7f849c;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">' +
+        '<span>' + p.date + '</span>' + p.tags + '<span>· ' + p.read + '</span>' +
+      '</div>' +
+      '<div style="border-top:1px solid #313244;margin-bottom:24px;"></div>' +
+      '<p style="font-size:16px;line-height:1.85;color:#bac2de;margin:0 0 18px;">' + p.p1 + '</p>' +
+      '<p style="font-size:16px;line-height:1.85;color:#bac2de;margin:0;">' + p.p2 + '</p>' +
+    '</div>'
+  );
+}
+
+// ── history ────────────────────────────────────────────────────────────────
+window.addEventListener('popstate', e => {
+  const len = (e.state && e.state.injLen) || 0;
+  visibleCount = len;
+  Array.from($('injected').querySelectorAll('[data-inject-id]')).forEach((block, idx) => {
+    block.style.display = idx < len ? 'block' : 'none';
+  });
+});
+
+// ── event listeners ────────────────────────────────────────────────────────
+$('js-chrome').addEventListener('click', () => {
+  body.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+window.addEventListener('wheel', e => { if (e.deltaY > 0) revealNext(); }, { passive: true });
+body.addEventListener('scroll', () => {
+  const y = body.scrollTop;
+  if (y > lastY) revealNext();
+  lastY = y;
+}, { passive: true });
+window.addEventListener('touchmove', () => revealNext(), { passive: true });
+window.addEventListener('keydown', e => {
+  if (['ArrowDown', 'PageDown', 'End', ' '].includes(e.key)) revealNext();
+}, { passive: true });
+
+// ── boot ───────────────────────────────────────────────────────────────────
+history.replaceState({ injLen: 0 }, '');
+startTyping(0);
+
+})();
+</script>
+</body>
+</html>
