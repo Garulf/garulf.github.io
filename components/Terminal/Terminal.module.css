@@ -9,7 +9,7 @@
 
 /* ── Bottom prompt suggestion ────────────────────────────────────────── */
 .suggestion {
-  color: var(--ctp-overlay1);
+  color: var(--ctp-overlay0);
   transition: color 0.15s ease;
 }
 

@@ -22,7 +22,7 @@ export default function TerminalBlock({
         <span className={styles.path}>~</span>
         <span className={styles.dollar}>&nbsp;$&nbsp;</span>
         <span className={styles.cmd}>{command}</span>
-        {showCursor && <span className="cursor" />}
+        {showCursor && <span className="cursor cursorStatic" />}
       </div>
       {children && <div className={styles.output}>{children}</div>}
     </div>
