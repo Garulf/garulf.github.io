@@ -1,12 +1,5 @@
 ---
 projects:
-  - name: HA-Commander
-    url: https://github.com/Garulf/HA-Commander
-    stars: 31
-    forks: 6
-    lang: Python
-    color: "#f9e2af"
-    desc: "Search and control your entire Home Assistant instance from Wox / Flow Launcher."
   - name: pyFlowLauncher
     url: https://github.com/Garulf/pyFlowLauncher
     stars: 17
@@ -21,6 +14,13 @@ projects:
     lang: Python
     color: "#f9e2af"
     desc: "Search and launch any game in your Steam library from the keyboard."
+  - name: HA-Commander
+    url: https://github.com/Garulf/HA-Commander
+    stars: 31
+    forks: 6
+    lang: Python
+    color: "#f9e2af"
+    desc: "Search and control your entire Home Assistant instance from Wox / Flow Launcher."
   - name: Search-MDI
     url: https://github.com/Garulf/Search-MDI
     stars: 2
