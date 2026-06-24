@@ -1,7 +1,7 @@
-import { PostMeta } from '@/lib/types'
+import { Post } from '@/lib/types'
 
 interface WritingSectionProps {
-  posts: PostMeta[]
+  posts: Post[]
   onInjectPost: (slug: string) => void
 }
 

@@ -31,7 +31,7 @@ interface TerminalProps {
   whoami: { meta: WhoamiMeta; contentHtml: string }
   projects: { meta: ProjectsMeta; contentHtml: string }
   contact: { meta: WhoamiMeta; contentHtml: string }
-  posts: PostMeta[]
+  posts: Post[]
   initialPost?: Post // if provided, auto-inject after boot sequence
 }
 
@@ -329,22 +329,10 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
     }
     if (type.startsWith('post/')) {
       const slug = type.slice(5)
-      // Find the post from posts list or initialPost
-      const postMeta = posts.find((p) => p.slug === slug)
-      if (initialPost && initialPost.slug === slug) {
-        return <PostSection post={initialPost} />
-      }
-      // For dynamically injected posts we only have PostMeta — construct a minimal Post
-      // In practice, posts fetched server-side should be available; here we use the meta
-      if (postMeta) {
-        // We can only show what we have — a full Post requires contentHtml
-        // The parent page should provide full posts or the initialPost covers the slug page case
-        // For SPA-style injection on the home page, we show what we have
-        const pseudoPost: Post = {
-          ...postMeta,
-          contentHtml: `<p><a href="/blog/${slug}" style="color:var(--ctp-blue)">Read full post →</a></p>`,
-        }
-        return <PostSection post={pseudoPost} />
+      // Look up full post (with contentHtml) from the posts array
+      const post = posts.find((p) => p.slug === slug) ?? initialPost
+      if (post && post.slug === slug) {
+        return <PostSection post={post} />
       }
       return null
     }
