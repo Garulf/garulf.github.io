@@ -17,20 +17,27 @@
   color: var(--ctp-text);
 }
 
-/* ── Mobile overrides ────────────────────────────────────────────────── */
-@media (max-width: 640px) {
+/* ── Full-screen at small sizes ──────────────────────────────────────── */
+@media (max-width: 900px) {
   .outer {
     padding: 0;
+    background: var(--ctp-base);
+    align-items: stretch;
+    justify-content: stretch;
   }
 
   .shell {
     width: 100vw !important;
+    max-width: 100vw !important;
     height: 100dvh !important;
     border-radius: 0 !important;
     border: none !important;
     box-shadow: none !important;
   }
+}
 
+/* ── Smaller font on narrow screens ──────────────────────────────────── */
+@media (max-width: 640px) {
   .termBody {
     padding: 16px 18px 48px !important;
     font-size: 14px !important;
