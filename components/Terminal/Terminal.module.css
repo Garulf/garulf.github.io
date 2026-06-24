@@ -7,6 +7,16 @@
   /* intentionally minimal — scrollbar styles live in globals.css under .term-body */
 }
 
+/* ── Bottom prompt suggestion ────────────────────────────────────────── */
+.suggestion {
+  color: var(--ctp-overlay1);
+  transition: color 0.15s ease;
+}
+
+.suggestionPrompt:hover .suggestion {
+  color: var(--ctp-text);
+}
+
 /* ── Mobile overrides ────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .outer {

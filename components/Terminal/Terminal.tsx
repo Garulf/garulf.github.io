@@ -255,6 +255,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
           {/* ── Bottom prompt: cursor before suggestion ───────────── */}
           {bootPhase === 'whoami-done' && !isActivelyTyping && (
             <div
+              className={styles.suggestionPrompt}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -278,7 +279,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
               <span style={{ color: 'var(--ctp-blue)' }}>~</span>
               <span style={{ color: 'var(--ctp-mauve)' }}>&nbsp;$&nbsp;</span>
               <span className="cursor" />
-              <span style={{ color: 'var(--ctp-overlay1)' }}>ls -la ~/garulf</span>
+              <span className={styles.suggestion}>ls -la ~/garulf</span>
             </div>
           )}
 
