@@ -42,17 +42,14 @@ export default function LsSection({ onInject }: LsSectionProps) {
         <a href="#" onClick={handleClick('projects')} style={entryLinkStyle}>
           <span style={permStyle}>drwxr-xr-x</span>
           <span style={nameStyle}>projects/</span>
-          <span style={descStyle}>— 4 pinned repos</span>
         </a>
         <a href="#" onClick={handleClick('writing')} style={entryLinkStyle}>
           <span style={permStyle}>drwxr-xr-x</span>
           <span style={nameStyle}>blog/</span>
-          <span style={descStyle}>— notes from the terminal</span>
         </a>
         <a href="#" onClick={handleClick('contact')} style={entryLinkStyle}>
           <span style={permStyle}>drwxr-xr-x</span>
           <span style={nameStyle}>contact/</span>
-          <span style={descStyle}>— get in touch</span>
         </a>
       </div>
     </div>

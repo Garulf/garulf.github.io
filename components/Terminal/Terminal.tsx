@@ -258,6 +258,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
               className={styles.suggestionPrompt}
               style={{
                 display: 'flex',
+                flexWrap: 'wrap',
                 alignItems: 'center',
                 fontSize: '20px',
                 marginBottom: '8px',
