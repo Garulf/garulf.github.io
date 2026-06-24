@@ -49,15 +49,14 @@ function getCommand(type: string): string {
   return type
 }
 
-// ─── Counter for unique IDs ────────────────────────────────────────────────────
-
-let nextId = 1
-
 // ─── Terminal Component ────────────────────────────────────────────────────────
 
 export default function Terminal({ whoami, projects, contact, posts, initialPost }: TerminalProps) {
   const shellRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
+
+  // ─── Counter for unique IDs (ref to avoid module-level mutable state) ────────
+  const nextId = useRef(1)
 
   // Nav scroll listener cleanup refs
   const navListeners = useRef<Array<() => void>>([])
@@ -67,9 +66,15 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
 
   // Injected sections
   const [injected, setInjected] = useState<InjectedSection[]>([])
+  // Ref kept in sync with injected so callbacks can read current length
+  // without stale-closure issues or needing injected in their dep arrays.
+  const injectedLenRef = useRef(0)
 
   // Track if we've already injected the initialPost (prevent double-inject)
   const initialPostInjected = useRef(false)
+
+  // Keep injectedLenRef in sync with injected.length for use in callbacks
+  injectedLenRef.current = injected.length
 
   // ─── Typewriter hooks ─────────────────────────────────────────────────────
 
@@ -178,7 +183,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
 
     initialPostInjected.current = true
     const type = `post/${initialPost.slug}`
-    const id = nextId++
+    const id = nextId.current++
     setInjected((prev) => [
       ...prev,
       { id, type, command: getCommand(type), typing: true },
@@ -191,10 +196,10 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
     setInjected((prev) => {
       // Don't double-inject nav if last section is already nav
       if (prev.length > 0 && prev[prev.length - 1].type === 'nav') return prev
-      const id = nextId++
+      const id = nextId.current++
       return [...prev, { id, type: 'nav', command: getCommand('nav'), typing: true }]
     })
-  }, [])
+  }, [nextId])
 
   const scheduleNavIfNeeded = useCallback(
     (type: string) => {
@@ -259,20 +264,20 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
 
   const handleInject = useCallback(
     (type: string) => {
-      const id = nextId++
+      const id = nextId.current++
       const command = getCommand(type)
 
-      setInjected((prev) => {
-        const newSections = [...prev, { id, type, command, typing: true }]
-        // Push to browser history with new length
-        history.pushState({ injLen: newSections.length }, '')
-        return newSections
-      })
+      // Compute the new length before setState so history.pushState is called
+      // exactly once, after the update — not inside an updater function, which
+      // React 18+ concurrent rendering may invoke multiple times.
+      const newLen = injectedLenRef.current + 1
+      setInjected((prev) => [...prev, { id, type, command, typing: true }])
+      history.pushState({ injLen: newLen }, '')
 
       // Scroll to bottom so new prompt is visible
       setTimeout(scrollToBottom, 50)
     },
-    [scrollToBottom]
+    [nextId, injectedLenRef, scrollToBottom]
   )
 
   const handleInjectPost = useCallback(
