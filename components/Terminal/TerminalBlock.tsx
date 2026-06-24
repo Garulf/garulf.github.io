@@ -5,15 +5,17 @@ interface TerminalBlockProps {
   command: string
   showCursor?: boolean
   children?: React.ReactNode
+  'data-section-id'?: number
 }
 
 export default function TerminalBlock({
   command,
   showCursor = false,
   children,
+  'data-section-id': sectionId,
 }: TerminalBlockProps) {
   return (
-    <div className={styles.block}>
+    <div className={styles.block} data-section-id={sectionId}>
       <div className={styles.prompt}>
         <span className={styles.user}>garulf</span>
         <span className={styles.at}>@</span>

@@ -19,9 +19,10 @@ type BootPhase = 'whoami-typing' | 'whoami-done'
 
 interface InjectedSection {
   id: number
-  type: string // 'ls' | 'projects' | 'writing' | 'contact' | 'post/{slug}'
+  type: string
   command: string
   typing: boolean
+  instant: boolean // skip typewriter, show full command immediately
 }
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -61,7 +62,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
   const [bootPhase, setBootPhase] = useState<BootPhase>('whoami-typing')
   const [injected, setInjected] = useState<InjectedSection[]>([])
 
-  // ─── Typewriter hooks ─────────────────────────────────────────────────────
+  // ─── Typewriter: whoami ───────────────────────────────────────────────────
 
   const whoamiTyped = useTypewriter('whoami', bootPhase === 'whoami-typing', () => {
     setBootPhase((prev) => (prev === 'whoami-typing' ? 'whoami-done' : prev))
@@ -76,6 +77,13 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' })
   }, [])
 
+  const scrollToSection = useCallback((id: number) => {
+    const body = bodyRef.current
+    if (!body) return
+    const el = body.querySelector(`[data-section-id="${id}"]`)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
   // ─── Auto-inject ls after whoami ──────────────────────────────────────────
 
   useEffect(() => {
@@ -86,13 +94,16 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
       if (lsInjected.current) return
       lsInjected.current = true
       const id = nextId.current++
-      setInjected((prev) => [...prev, { id, type: 'ls', command: getCommand('ls'), typing: true }])
+      setInjected((prev) => [
+        ...prev,
+        { id, type: 'ls', command: getCommand('ls'), typing: true, instant: false },
+      ])
     }, 600)
 
     return () => clearTimeout(timer)
   }, [bootPhase])
 
-  // ─── Injected section typing completion ───────────────────────────────────
+  // ─── Section typing completion ─────────────────────────────────────────────
 
   const markSectionDone = useCallback(
     (id: number, type: string) => {
@@ -100,7 +111,13 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
         prev.map((s) => (s.id === id ? { ...s, typing: false } : s))
       )
       setTimeout(() => {
-        scrollToBottom()
+        if (type.startsWith('post/')) {
+          // Scroll to the top of the post so the reader starts from the beginning
+          scrollToSection(id)
+        } else {
+          scrollToBottom()
+        }
+
         // After ls finishes, auto-inject the blog post if one was requested
         if (type === 'ls' && initialPost && !initialPostInjected.current) {
           initialPostInjected.current = true
@@ -108,28 +125,39 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
           const postId = nextId.current++
           setInjected((prev) => [
             ...prev,
-            { id: postId, type: postType, command: getCommand(postType), typing: true },
+            { id: postId, type: postType, command: getCommand(postType), typing: true, instant: false },
           ])
           history.replaceState({ injLen: 2 }, '')
         }
       }, 80)
     },
-    [scrollToBottom, initialPost]
+    [scrollToBottom, scrollToSection, initialPost]
   )
 
+  // Typewriter for the last injected section — disabled for instant sections
   const injectedTyped = useTypewriter(
     lastInjected?.command ?? '',
-    lastInjected?.typing === true,
+    lastInjected?.typing === true && !lastInjected?.instant,
     lastInjected ? () => markSectionDone(lastInjected.id, lastInjected.type) : undefined
   )
+
+  // Auto-complete instant sections after a brief pause (cursor visible at end)
+  useEffect(() => {
+    const instantSection = injected.find((s) => s.instant && s.typing)
+    if (!instantSection) return
+    const timer = setTimeout(() => {
+      markSectionDone(instantSection.id, instantSection.type)
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [injected, markSectionDone])
 
   // ─── Inject handler ───────────────────────────────────────────────────────
 
   const handleInject = useCallback(
-    (type: string) => {
+    (type: string, instant = false) => {
       const id = nextId.current++
       const command = getCommand(type)
-      const newSections = [...injected, { id, type, command, typing: true }]
+      const newSections = [...injected, { id, type, command, typing: true, instant }]
       setInjected(newSections)
       history.pushState({ injLen: newSections.length }, '')
       setTimeout(scrollToBottom, 50)
@@ -234,16 +262,18 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
           {/* ── Injected sections ─────────────────────────────────── */}
           {injected.map((section, idx) => {
             const isLast = idx === injected.length - 1
-            const displayedCommand =
-              isLast && section.typing
-                ? injectedTyped.displayed
-                : section.typing
-                  ? ''
-                  : section.command
+            const displayedCommand = !section.typing
+              ? section.command                          // done: full command
+              : section.instant
+                ? section.command                        // instant: full command immediately
+                : isLast
+                  ? injectedTyped.displayed              // animated: partial text
+                  : ''                                   // non-last typing: hide
 
             return (
               <TerminalBlock
                 key={section.id}
+                data-section-id={section.id}
                 command={displayedCommand}
                 showCursor={isLast && section.typing}
               >
@@ -265,12 +295,12 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
                 cursor: 'pointer',
                 userSelect: 'none',
               }}
-              onClick={() => handleInject('ls')}
+              onClick={() => handleInject('ls', true)}
               role="button"
               tabIndex={0}
               aria-label="Run ls -la ~/garulf"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleInject('ls')
+                if (e.key === 'Enter' || e.key === ' ') handleInject('ls', true)
               }}
             >
               <span style={{ color: 'var(--ctp-green)' }}>garulf</span>
