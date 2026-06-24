@@ -6,7 +6,19 @@ interface TerminalChromeProps {
 
 export default function TerminalChrome({ onScrollToTop }: TerminalChromeProps) {
   return (
-    <div className={styles.chrome} onClick={onScrollToTop}>
+    <div
+      className={styles.chrome}
+      onClick={onScrollToTop}
+      role="button"
+      tabIndex={0}
+      aria-label="Scroll to top"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === ' ') e.preventDefault()
+          onScrollToTop()
+        }
+      }}
+    >
       <div className={styles.dots}>
         <span className={`${styles.dot} ${styles.dotRed}`} />
         <span className={`${styles.dot} ${styles.dotYellow}`} />

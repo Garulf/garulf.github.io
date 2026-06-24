@@ -7,7 +7,6 @@ import type { WhoamiMeta, ProjectsMeta, PostMeta, Post } from './types'
 
 async function processMarkdown(content: string): Promise<string> {
   const result = await remark()
-    // @ts-ignore – remark-html types are not bundled
     .use(remarkHtml)
     .process(content)
   return result.toString()

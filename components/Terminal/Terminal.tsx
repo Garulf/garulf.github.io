@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { WhoamiMeta, ProjectsMeta, PostMeta, Post } from '@/lib/types'
+import { WhoamiMeta, ProjectsMeta, Post } from '@/lib/types'
 import { useTypewriter } from './useTypewriter'
 import TerminalBlock from './TerminalBlock'
 import TerminalChrome from './TerminalChrome'
@@ -188,6 +188,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
       ...prev,
       { id, type, command: getCommand(type), typing: true },
     ])
+    history.replaceState({ injLen: 1 }, '')
   }, [bootPhase, initialPost])
 
   // ─── Nav section injection helpers ───────────────────────────────────────

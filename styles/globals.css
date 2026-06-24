@@ -34,6 +34,7 @@
 body {
   margin: 0;
   background: var(--ctp-mantle);
+  font-family: var(--font-jetbrains-mono, 'JetBrains Mono', monospace);
 }
 
 ::selection {
