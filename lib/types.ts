@@ -22,6 +22,8 @@ export interface Project {
 
 export interface ProjectsMeta {
   projects: Project[];
+  allReposUrl?: string;
+  allReposCount?: number;
 }
 
 export interface PostMeta {
