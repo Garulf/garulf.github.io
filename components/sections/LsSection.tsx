@@ -14,11 +14,6 @@ const nameStyle: React.CSSProperties = {
   marginRight: '8px',
 }
 
-const descStyle: React.CSSProperties = {
-  color: 'var(--ctp-surface2)',
-  fontSize: '14px',
-}
-
 const entryLinkStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
