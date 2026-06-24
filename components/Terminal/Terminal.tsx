@@ -375,7 +375,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
         >
           {/* ── Phase 1: whoami block ─────────────────────────────── */}
           <TerminalBlock
-            command={whoamiTyped.displayed}
+            command={bootPhase === 'whoami-typing' ? whoamiTyped.displayed : 'whoami'}
             showCursor={bootPhase === 'whoami-typing'}
           >
             {bootPhase !== 'whoami-typing' && (
@@ -389,7 +389,7 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
           {/* ── Phase 2: ls block (shown after whoami done) ──────── */}
           {bootPhase !== 'whoami-typing' && (
             <TerminalBlock
-              command={lsTyped.displayed}
+              command={bootPhase === 'ls-typing' ? lsTyped.displayed : 'ls -la ~/garulf'}
               showCursor={bootPhase === 'ls-typing'}
             >
               {bootPhase === 'ls-done' && (
