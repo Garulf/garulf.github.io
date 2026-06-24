@@ -66,29 +66,24 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
 
   // Injected sections
   const [injected, setInjected] = useState<InjectedSection[]>([])
-  // Ref kept in sync with injected so callbacks can read current length
-  // without stale-closure issues or needing injected in their dep arrays.
-  const injectedLenRef = useRef(0)
 
   // Track if we've already injected the initialPost (prevent double-inject)
   const initialPostInjected = useRef(false)
 
-  // Keep injectedLenRef in sync with injected.length for use in callbacks
-  injectedLenRef.current = injected.length
-
   // ─── Typewriter hooks ─────────────────────────────────────────────────────
 
   // Phase 1: whoami command (always starts immediately)
-  const whoamiTyped = useTypewriter('whoami', bootPhase === 'whoami-typing')
+  const whoamiTyped = useTypewriter('whoami', bootPhase === 'whoami-typing', () => {
+    setBootPhase((prev) => (prev === 'whoami-typing' ? 'whoami-done' : prev))
+  })
 
   // Phase 2: ls command
-  const lsTyped = useTypewriter('ls -la ~/garulf', bootPhase === 'ls-typing')
+  const lsTyped = useTypewriter('ls -la ~/garulf', bootPhase === 'ls-typing', () => {
+    setBootPhase((prev) => (prev === 'ls-typing' ? 'ls-done' : prev))
+  })
 
   // Last injected section (only the last one types)
   const lastInjected = injected[injected.length - 1] ?? null
-  const lastInjectedCommand = lastInjected?.command ?? ''
-  const lastInjectedEnabled = lastInjected?.typing === true
-  const injectedTyped = useTypewriter(lastInjectedCommand, lastInjectedEnabled)
 
   // ─── Scroll helpers ───────────────────────────────────────────────────────
 
@@ -111,13 +106,6 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
   }, [])
 
   // ─── Phase 1 → Phase 2 transition ────────────────────────────────────────
-
-  // When whoami typing finishes, move to 'whoami-done'
-  useEffect(() => {
-    if (whoamiTyped.done && bootPhase === 'whoami-typing') {
-      setBootPhase('whoami-done')
-    }
-  }, [whoamiTyped.done, bootPhase])
 
   // When in whoami-done: check if scrollable; if not, auto-advance to ls after 1.1s
   useEffect(() => {
@@ -166,13 +154,6 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
       window.removeEventListener('keydown', handleKey)
     }
   }, [bootPhase])
-
-  // When ls typing finishes, move to 'ls-done'
-  useEffect(() => {
-    if (lsTyped.done && bootPhase === 'ls-typing') {
-      setBootPhase('ls-done')
-    }
-  }, [lsTyped.done, bootPhase])
 
   // ─── initialPost auto-inject after ls-done ────────────────────────────────
 
@@ -243,23 +224,28 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
 
   // ─── Injected section typing completion ───────────────────────────────────
 
-  // When the last injected section finishes typing, mark it done
-  useEffect(() => {
-    if (!injectedTyped.done) return
-    if (!lastInjected || !lastInjected.typing) return
-
-    setInjected((prev) =>
-      prev.map((s) =>
-        s.id === lastInjected.id ? { ...s, typing: false } : s
+  const markSectionDone = useCallback(
+    (id: number, type: string) => {
+      setInjected((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, typing: false } : s))
       )
-    )
+      // Scroll to bottom after section content appears
+      setTimeout(() => {
+        scrollToBottom()
+        scheduleNavIfNeeded(type)
+      }, 80)
+    },
+    [scrollToBottom, scheduleNavIfNeeded]
+  )
 
-    // Scroll to bottom after section content appears
-    setTimeout(() => {
-      scrollToBottom()
-      scheduleNavIfNeeded(lastInjected.type)
-    }, 80)
-  }, [injectedTyped.done, lastInjected, scrollToBottom, scheduleNavIfNeeded])
+  // Typewriter for the last injected section (only the last one types)
+  const injectedTyped = useTypewriter(
+    lastInjected?.command ?? '',
+    lastInjected?.typing === true,
+    lastInjected
+      ? () => markSectionDone(lastInjected.id, lastInjected.type)
+      : undefined
+  )
 
   // ─── Inject handler (for section clicks) ─────────────────────────────────
 
@@ -267,18 +253,14 @@ export default function Terminal({ whoami, projects, contact, posts, initialPost
     (type: string) => {
       const id = nextId.current++
       const command = getCommand(type)
-
-      // Compute the new length before setState so history.pushState is called
-      // exactly once, after the update — not inside an updater function, which
-      // React 18+ concurrent rendering may invoke multiple times.
-      const newLen = injectedLenRef.current + 1
-      setInjected((prev) => [...prev, { id, type, command, typing: true }])
-      history.pushState({ injLen: newLen }, '')
+      const newSections = [...injected, { id, type, command, typing: true }]
+      setInjected(newSections)
+      history.pushState({ injLen: newSections.length }, '')
 
       // Scroll to bottom so new prompt is visible
       setTimeout(scrollToBottom, 50)
     },
-    [nextId, injectedLenRef, scrollToBottom]
+    [nextId, injected, scrollToBottom]
   )
 
   const handleInjectPost = useCallback(

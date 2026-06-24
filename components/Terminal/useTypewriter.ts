@@ -1,24 +1,20 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-export function useTypewriter(text: string, enabled: boolean = true) {
+export function useTypewriter(text: string, enabled: boolean = true, onComplete?: () => void) {
   const [displayed, setDisplayed] = useState('')
-  const [done, setDone] = useState(false)
+  const onCompleteRef = useRef(onComplete)
+
+  // Keep the latest onComplete without causing effect re-runs
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  })
 
   useEffect(() => {
-    // Reset when text changes or enabled becomes true
-    if (!enabled) {
-      setDisplayed('')
-      setDone(false)
-      return
-    }
-
-    setDisplayed('')
-    setDone(false)
+    if (!enabled) return
 
     let n = 0
     let timeoutId: NodeJS.Timeout | null = null
-    let initialDelayId: NodeJS.Timeout | null = null
 
     const tick = () => {
       n++
@@ -29,19 +25,20 @@ export function useTypewriter(text: string, enabled: boolean = true) {
         timeoutId = setTimeout(tick, 14 + Math.random() * 12)
       } else {
         // Typing complete
-        setDone(true)
+        onCompleteRef.current?.()
       }
     }
 
     // Initial 60ms delay before starting
-    initialDelayId = setTimeout(tick, 60)
+    const initialDelayId = setTimeout(tick, 60)
 
     // Cleanup function
     return () => {
-      if (initialDelayId) clearTimeout(initialDelayId)
+      clearTimeout(initialDelayId)
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [text, enabled])
 
-  return { displayed, done }
+  if (!enabled) return { displayed: '', done: false }
+  return { displayed, done: false }
 }
