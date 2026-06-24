@@ -1,0 +1,28 @@
+/* Terminal.module.css */
+
+/* termBody: module class for the scrollable terminal body.
+   The global .term-body class handles webkit scrollbar styles.
+   Add any module-specific overrides here. */
+.termBody {
+  /* intentionally minimal — scrollbar styles live in globals.css under .term-body */
+}
+
+/* ── Mobile overrides ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .outer {
+    padding: 0;
+  }
+
+  .shell {
+    width: 100vw !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .termBody {
+    padding: 16px 18px 48px !important;
+    font-size: 14px !important;
+  }
+}
