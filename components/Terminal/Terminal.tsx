@@ -88,7 +88,7 @@ export default function Terminal({ whoami, projects, posts, initialPost }: Termi
     if (bootPhase !== 'whoami-done') return
     if (lsInjected.current) return
 
-    const timer = setTimeout(() => {
+    const injectLs = () => {
       if (lsInjected.current) return
       lsInjected.current = true
       const id = nextId.current++
@@ -96,8 +96,22 @@ export default function Terminal({ whoami, projects, posts, initialPost }: Termi
         ...prev,
         { id, type: 'ls', command: getCommand('ls'), typing: true, instant: false },
       ])
-    }, 600)
+    }
 
+    const isMobile = window.matchMedia('(max-width: 767px)').matches
+
+    if (isMobile) {
+      const body = bodyRef.current
+      if (!body) return
+      const handleScroll = () => {
+        injectLs()
+        body.removeEventListener('scroll', handleScroll)
+      }
+      body.addEventListener('scroll', handleScroll, { passive: true })
+      return () => body.removeEventListener('scroll', handleScroll)
+    }
+
+    const timer = setTimeout(injectLs, 600)
     return () => clearTimeout(timer)
   }, [bootPhase])
 
