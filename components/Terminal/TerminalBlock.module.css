@@ -1,0 +1,48 @@
+.block {
+  margin-bottom: 48px;
+}
+
+.prompt {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 20px;
+}
+
+.user {
+  color: var(--ctp-green);
+}
+
+.at {
+  color: var(--ctp-overlay0);
+}
+
+.host {
+  color: var(--ctp-teal);
+}
+
+.path {
+  color: var(--ctp-blue);
+}
+
+.dollar {
+  color: var(--ctp-mauve);
+}
+
+.cmd {
+  color: var(--ctp-text);
+}
+
+.output {
+  margin-top: 20px;
+}
+
+@media (max-width: 640px) {
+  .prompt {
+    font-size: 16px;
+  }
+
+  .block {
+    margin-bottom: 32px;
+  }
+}

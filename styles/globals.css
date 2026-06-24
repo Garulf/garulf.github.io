@@ -87,3 +87,13 @@ body {
 .reveal {
   animation: revealup 0.4s ease both;
 }
+
+.cursor {
+  display: inline-block;
+  width: 11px;
+  height: 22px;
+  background: var(--ctp-mauve);
+  animation: blink 1s step-start infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
