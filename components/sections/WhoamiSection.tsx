@@ -21,7 +21,7 @@ export default function WhoamiSection({ meta, contentHtml }: WhoamiSectionProps)
       <style>{`
         @media (max-width: 900px) {
           .whoami-flex { flex-direction: column !important; }
-          .whoami-avatar { width: 100px !important; height: 100px !important; }
+          .whoami-avatar { order: -1 !important; width: 100px !important; height: 100px !important; }
           .whoami-name { font-size: 22px !important; }
           .whoami-bio { font-size: 14px !important; }
           .whoami-grid { grid-template-columns: auto 1fr !important; font-size: 13px !important; }
