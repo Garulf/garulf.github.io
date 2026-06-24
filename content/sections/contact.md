@@ -1,6 +1,6 @@
 ---
 name: Garulf
-role: Flow Launcher plugin maintainer
+role: Lorem ipsum dolor sit amet
 location: "UTC−04:00"
 languages: [Python, C#, Shell, CSS, JavaScript]
 github: https://github.com/Garulf

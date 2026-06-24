@@ -1,6 +1,6 @@
 ---
 name: Garulf
-role: Flow Launcher plugin maintainer
+role: Lorem ipsum dolor sit amet
 location: "UTC−04:00"
 languages: [Python, C#, Shell, CSS, JavaScript]
 github: https://github.com/Garulf
@@ -10,4 +10,4 @@ org: https://github.com/Flow-Launcher
 avatar: https://avatars.githubusercontent.com/u/535299?v=4
 ---
 
-Developer who lives in the keyboard. I build launcher plugins and home-automation tools that remove the step between an idea and the action.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam quis nostrud.
